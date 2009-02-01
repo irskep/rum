@@ -13,7 +13,7 @@ class RumSwigger(object):
         self.eof = eof
         self.cell_size = cell_size
     
-    def eval(self, program_text):    
+    def init(self, program_text):    
         self.program = program_text
         self.pgm_len = len(self.program)
         self.procedures = {}
@@ -27,7 +27,7 @@ class RumSwigger(object):
         self.return_positions = []
         self.string = ""
         
-        cmd_dict = {
+        self.cmd_dict = {
             '>': self.inc_ptr,
             '<': self.dec_ptr,
             '+': self.inc_tape,
@@ -42,10 +42,12 @@ class RumSwigger(object):
             '"': self.put_string,
             '#': self.skip_comment
         }
+    
+    def run(self):
         while self.pgm_pos < self.pgm_len and self.pgm_pos >= 0:
             c = self.program[self.pgm_pos]
-            if c in cmd_dict:
-                cmd_dict[c]()
+            if c in self.cmd_dict:
+                self.cmd_dict[c]()
             elif c in string.digits:
                 if self.reps == 0:
                     self.reps = int(c)
@@ -54,6 +56,24 @@ class RumSwigger(object):
                     self.reps += int(c)
             self.pgm_pos += 1
         sys.stdout.write('\n')
+    
+    def step(self):
+        if self.pgm_pos >= self.pgm_len or self.pgm_pos < 0:
+            return False
+        c = self.program[self.pgm_pos]
+        if c in self.cmd_dict:
+            self.cmd_dict[c]()
+        elif c in string.digits:
+            if self.reps == 0:
+                self.reps = int(c)
+            else:
+                self.reps *= 10
+                self.reps += int(c)
+        self.pgm_pos += 1
+        if self.pgm_pos >= self.pgm_len or self.pgm_pos < 0:
+            sys.stdout.write('\n')
+            return False
+        return True
     
     def check_tape(self, pos):
         if pos < len(self.tape):
@@ -211,5 +231,6 @@ if __name__ == "__main__":
         parser.error("Incorrect number of arguments.")
         quit()
     fucker = RumSwigger(opts.tape_len, opts.eof, opts.size)
-    fucker.eval(open(args[0]).read())
+    fucker.init(open(args[0]).read())
+    fucker.run()
     if opts.verbose: print fucker.tape
