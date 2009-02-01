@@ -63,8 +63,8 @@ class SteveFucker(object):
                     self.reps *= 10
                     self.reps += int(c)
             elif c == "#":
-                while self.program[self.pgm_pos] != "\n" \
-                        and self.pgm_pos < self.pgm_len:
+                while self.pgm_pos < self.pgm_len \
+                        and self.program[self.pgm_pos] != "\n":
                     self.pgm_pos += 1
             self.pgm_pos += 1
         sys.stdout.write('\n')
