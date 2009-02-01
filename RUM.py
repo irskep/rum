@@ -191,7 +191,6 @@ if __name__ == "__main__":
     if len(args) != 1:
         parser.error("Incorrect number of arguments.")
         quit()
-    print [opts.tape_len, opts.eof, opts.size, opts.verbose]
     fucker = SteveFucker(opts.tape_len, opts.eof, opts.size)
     fucker.eval(open(args[0]).read())
     if opts.verbose: print fucker.tape
