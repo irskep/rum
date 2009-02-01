@@ -4,6 +4,7 @@
 #getchar() stolen from pybrain4 (http://gufffluff.blogspot.com/)
 
 import sys, string
+from getch import getchar
 
 class SteveFucker(object):
     def __init__(self, tape_len=0, eof=""):
@@ -159,46 +160,6 @@ class SteveFucker(object):
         self.reps = 0
         return r
     
-
-class _Getch:
-    """ Gets a single character from standard input.  
-        Does not echo to the screen."""
-    def __init__(self):
-        try:
-            self.impl = _GetchWindows()
-        except ImportError:
-            self.impl = _GetchUnix()
-    
-    def __call__(self): 
-        return self.impl()
-    
-
-class _GetchUnix:
-    def __init__(self):
-        import tty, sys
-    
-    def __call__(self):
-        import sys, tty, termios
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
-    
-
-class _GetchWindows:
-    def __init__(self):
-        import msvcrt
-    
-    def __call__(self):
-        import msvcrt
-        return msvcrt.getch()
-    
-
-getchar = _Getch()
 
 if __name__ == "__main__":
     fucker = SteveFucker()
