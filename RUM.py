@@ -26,6 +26,7 @@ class RumSwigger(object):
         self.reps = 0
         self.return_positions = []
         self.string = ""
+        self.message = ""
         
         self.cmd_dict = {
             '>': self.inc_ptr,
@@ -43,34 +44,30 @@ class RumSwigger(object):
             '#': self.skip_comment
         }
     
-    def run(self):
-        while self.pgm_pos < self.pgm_len and self.pgm_pos >= 0:
-            c = self.program[self.pgm_pos]
-            if c in self.cmd_dict:
-                self.cmd_dict[c]()
-            elif c in string.digits:
-                if self.reps == 0:
-                    self.reps = int(c)
-                else:
-                    self.reps *= 10
-                    self.reps += int(c)
-            self.pgm_pos += 1
-        sys.stdout.write('\n')
-    
-    def step(self):
-        if self.pgm_pos >= self.pgm_len or self.pgm_pos < 0:
-            return False
+    def go(self):
         c = self.program[self.pgm_pos]
         if c in self.cmd_dict:
             self.cmd_dict[c]()
         elif c in string.digits:
+            self.message = ' '.join(["Read digit", c])
             if self.reps == 0:
                 self.reps = int(c)
             else:
                 self.reps *= 10
                 self.reps += int(c)
         self.pgm_pos += 1
+    
+    def run(self):
+        while self.pgm_pos < self.pgm_len and self.pgm_pos >= 0:
+            self.go()
+        sys.stdout.write('\n')
+    
+    def step(self):
         if self.pgm_pos >= self.pgm_len or self.pgm_pos < 0:
+            return False
+        self.go()
+        if self.pgm_pos >= self.pgm_len or self.pgm_pos < 0:
+            self.message = "Finished."
             sys.stdout.write('\n')
             return False
         return True
@@ -84,30 +81,44 @@ class RumSwigger(object):
         return pos
     
     def inc_ptr(self):
-        self.ptr_pos += self.get_reps()
+        v = self.get_reps()
+        self.message = ' '.join(["Moved pointer forward", str(v)])
+        self.ptr_pos += v
         self.ptr_pos = self.check_tape(self.ptr_pos)
     
     def dec_ptr(self):
-        self.ptr_pos -= self.get_reps()
+        v = self.get_reps()
+        self.message = ' '.join(["Moved pointer backward", str(v)])
+        self.ptr_pos -= v
         self.ptr_pos = self.check_tape(self.ptr_pos)
     
     def inc_tape(self):
-        v = self.tape[self.ptr_pos] + self.get_reps()
+        amt = self.get_reps()
+        v = self.tape[self.ptr_pos] + amt
+        self.message = ' '.join([
+            "Incremented", str(self.ptr_pos), "by", str(amt)
+        ])
         if self.cell_size > 0:
             v = v % self.cell_size
         self.tape[self.ptr_pos] = v
     
     def dec_tape(self):
-        v = self.tape[self.ptr_pos] - self.get_reps()
+        amt = self.get_reps()
+        v = self.tape[self.ptr_pos] - amt
+        self.message = ' '.join([
+            "Decremented", str(self.ptr_pos), "by", str(amt)
+        ])
         if self.cell_size > 0:
             v = v % self.cell_size
         self.tape[self.ptr_pos] = v
     
     def put_char(self):
         if self.tape[self.ptr_pos] in range(256):
-            sys.stdout.write(chr(self.tape[self.ptr_pos]))
+            v = chr(self.tape[self.ptr_pos])
         else:
-            sys.stdout.write(str(self.tape[self.ptr_pos]))
+            v = str(self.tape[self.ptr_pos])
+        self.message = ' '.join(["Wrote '", str(v), "' to output"])
+        sys.stdout.write(v)
     
     def get_char(self):    
         if len(self.string) > 0:
@@ -115,14 +126,20 @@ class RumSwigger(object):
             self.string = self.string[1:]
         else:
             char_in = ord(getchar())
-        if char_in == 3:
+        if char_in == 3:    
+            self.message = "Kill signal: exiting"
             self.pgm_pos = self.pgm_len
         if char_in == 4:
             if self.eof == "0":
                 self.tape[self.ptr_pos] = 0
+                self.message = "EOF: writing zero"
             elif self.eof == "-1":
                 self.tape[self.ptr_pos] = -1
-        else:
+                self.message = "EOF: writing -1"
+            else:    
+                self.message = "EOF: no change"
+        else:        
+            self.message = ' '.join(["Read", str(char_in)])
             self.tape[self.ptr_pos] = char_in
     
     def check_bracket(self):
@@ -130,6 +147,7 @@ class RumSwigger(object):
         start = self.pgm_pos
         if self.program[self.pgm_pos] == "]":
             if self.tape[self.ptr_pos] == 0:
+                self.message = "Exiting loop"
                 return
             while depth > 0 and self.pgm_pos >= 0:
                 self.pgm_pos -= 1
@@ -137,10 +155,12 @@ class RumSwigger(object):
                     depth += 1
                 elif self.program[self.pgm_pos] == "[":
                     depth -= 1
+            self.message = "Continuing loop"
             if self.pgm_pos < 0:
                 print "Missing left bracket to match right at", start
         elif self.program[self.pgm_pos] == "[":
             if self.tape[self.ptr_pos] != 0:
+                self.message = "Entering loop"
                 return
             while depth > 0 and self.pgm_pos < self.pgm_len:
                 self.pgm_pos += 1
@@ -148,6 +168,7 @@ class RumSwigger(object):
                     depth -= 1
                 elif self.program[self.pgm_pos] == "[":
                     depth += 1
+            self.message = "Skipping loop"
             if self.pgm_pos >= self.pgm_len:
                 print "Missing right bracket to match left at", start
         self.pgm_pos -= 1
@@ -173,6 +194,7 @@ class RumSwigger(object):
         self.string = ''.join(
             [old_str, new_str, chr(0)]
         )
+        self.message = "Added string to input buffer"
     
     def put_proc(self):
         val = self.tape[self.ptr_pos]
@@ -183,20 +205,29 @@ class RumSwigger(object):
         if self.pgm_pos >= self.pgm_len:
             print "Right paren not found for left at", start+1
         self.procedures[val] = start
+        self.message = ' '.join([
+            "Stored procedure at", str(start), "in", str(val)
+        ])
     
     def call_proc(self):
         self.return_positions.append(self.pgm_pos)
-        proc_pos = self.procedures[self.tape[self.ptr_pos]]
+        proc_num = self.tape[self.ptr_pos]
+        proc_pos = self.procedures[proc_num]
         while self.reps > 1:
             self.return_positions.append(proc_pos)
             self.reps -= 1
         self.reps = 0
         self.pgm_pos = proc_pos
+        self.message = ' '.join([
+            "Going to procedure", str(proc_num), "at", str(proc_pos)
+        ])
     
     def end_proc(self):
+        self.message = "Returning from procedure"
         self.pgm_pos = self.return_positions.pop()
     
     def skip_comment(self):
+        self.message = "Skipping comment"
         while self.pgm_pos < self.pgm_len \
                 and self.program[self.pgm_pos] != "\n":
             self.pgm_pos += 1
