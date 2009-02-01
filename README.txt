@@ -24,6 +24,6 @@ In this example, procedure 1 is essentially a print function, and procedure 2 is
 ", "[-]+:		#print ', '
 "world"[-]++: 	#print 'WORLD'
 
-Comment out lines until the next LF with #. Please do not put brackets or parentheses inside comments.
+Comment out lines until the next LF with #. Please use discretion when putting punctuation in comments, as I have not tested it at all.
 
 RUM is in the public domain.
