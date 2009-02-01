@@ -6,9 +6,9 @@
 import sys, string
 from getch import getchar
 
-class SteveFucker(object):
+class RumSwigger(object):
     def __init__(self, tape_len=0, eof="", cell_size=0):
-        super(SteveFucker, self).__init__()
+        super(RumSwigger, self).__init__()
         self.tape_len = tape_len
         self.eof = eof
         self.cell_size = cell_size
@@ -191,6 +191,6 @@ if __name__ == "__main__":
     if len(args) != 1:
         parser.error("Incorrect number of arguments.")
         quit()
-    fucker = SteveFucker(opts.tape_len, opts.eof, opts.size)
+    fucker = RumSwigger(opts.tape_len, opts.eof, opts.size)
     fucker.eval(open(args[0]).read())
     if opts.verbose: print fucker.tape
