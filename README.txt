@@ -3,12 +3,21 @@ v0.1
 
 RUM (bRainfUck iMproved) is a Brainfuck interpreter with Extra Features! It supports 0, -1, and 'ignore' EOF types, as well as an arbitrarily bounded (or unbounded) tape length. It also supports strings, numbered repetitions, and comments.
 
+ ===========
+ = Strings =
+ ===========
 The following program converts the string "helloworld" to uppercase:
 "helloworld",[--------------------------------.,]
 
+ ===============
+ = Repetitions =
+ ===============
 You can repeat a command n times by preceding that command with a number. Using this feature, we can significantly shorten the 'helloworld' program:
 "helloworld",[32-.,]
 
+ ==============
+ = Procedures =
+ ==============
 Procedures are defined by parentheses, pbrain-style. For example, +([-]) puts a procedure that resets the current cell to zero in slot 1. Use : to call the procedure denoted by the value of the current cell.
 
 For example, to print out HELLOWORLD twice:
@@ -24,6 +33,14 @@ In this example, procedure 1 is essentially a print function, and procedure 2 is
 ", "[-]+:		#print ', '
 "world"[-]++: 	#print 'WORLD'
 
+ ===============
+ = Breakpoints =
+ ===============
+To set a breakpoint for RumBottle to handle, use !.
+
+ ============
+ = Comments =
+ ============
 Comment out lines until the next LF with #. Please use discretion when putting punctuation in comments, as I have not tested it at all.
 
 RUM is in the public domain.
