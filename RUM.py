@@ -31,6 +31,7 @@ class RumSwigger(object):
             '.': self.put_char,
             ',': self.get_char,
             '(': self.put_proc,
+            ':': self.call_proc,
             '"': self.put_string
         }
         while self.pgm_pos < self.pgm_len and self.pgm_pos >= 0:
@@ -53,9 +54,6 @@ class RumSwigger(object):
                 if self.cell_size > 0:
                     v = v % self.cell_size
                 self.tape[self.ptr_pos] = v
-            elif c == ':':
-                self.return_positions.append(self.pgm_pos)
-                self.pgm_pos = self.procedures[self.tape[self.ptr_pos]]
             elif c == ')':
                 self.pgm_pos = self.return_positions.pop()
             elif c == ']':
@@ -161,6 +159,15 @@ class RumSwigger(object):
         if self.pgm_pos >= self.pgm_len:
             print "Right paren not found for left at", start+1
         self.procedures[val] = start
+    
+    def call_proc(self):
+        self.return_positions.append(self.pgm_pos)
+        proc_pos = self.procedures[self.tape[self.ptr_pos]]
+        while self.reps > 1:
+            self.return_positions.append(proc_pos)
+            self.reps -= 1
+        self.reps = 0
+        self.pgm_pos = proc_pos
     
     def get_reps(self):
         r = max(1, self.reps)
