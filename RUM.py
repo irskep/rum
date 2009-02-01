@@ -5,7 +5,7 @@
 
 import sys, string
 
-test_program = '+("helloworld",[32-.,])::'
+test_program = '+("helloworld",[32-.,]):+:'
 
 class SteveFucker(object):
     def __init__(self, tape_len=0, eof=""):
@@ -49,10 +49,8 @@ class SteveFucker(object):
                 self.tape[self.ptr_pos] -= self.get_reps()
             elif c == ':':
                 self.return_positions.append(self.pgm_pos)
-                print 'pushed', self.return_positions
                 self.pgm_pos = self.procedures[self.tape[self.ptr_pos]]
-            elif c == ')':    
-                print 'popping', self.return_positions
+            elif c == ')':
                 self.pgm_pos = self.return_positions.pop()
             elif c == ']':
                 if self.tape[self.ptr_pos] != 0:
@@ -146,7 +144,7 @@ class SteveFucker(object):
     
     def put_proc(self):
         val = self.tape[self.ptr_pos]
-        start = self.pgm_pos+1
+        start = self.pgm_pos
         while self.pgm_pos < self.pgm_len \
                 and self.program[self.pgm_pos] != ')':
             self.pgm_pos += 1
