@@ -18,7 +18,11 @@ In this example, we store the function "helloworld",[32-.,] in slot 1 and call i
 Since the uppercase function will not work on punctuation, we can use procedures to uppercase individual words:
 +(,[.,])+(,[32-.,])"hello":[-]+", ":[-]++"world":
 In this example, procedure 1 is essentially a print function, and procedure 2 is the uppercase function from earlier. With comments:
-
++(,[.,]) 		#procedure 1 is print
++(,[32-.,]) 	#procedure 2 is print-uppercase
+"hello": 		#print 'HELLO'
+", "[-]+:		#print ', '
+"world"[-]++: 	#print 'WORLD'
 
 Comment out lines until the next LF with #. Please do not put brackets or parentheses inside comments.
 
