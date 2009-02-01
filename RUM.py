@@ -5,8 +5,6 @@
 
 import sys, string
 
-test_program = '+("helloworld",[32-.,]):+:'
-
 class SteveFucker(object):
     def __init__(self, tape_len=0, eof=""):
         super(SteveFucker, self).__init__()
@@ -138,8 +136,12 @@ class SteveFucker(object):
             print "String not terminated"
         new_str = self.program[start_pos:self.pgm_pos]
         new_str *= self.get_reps()
+        if len(self.string) > 1:
+            old_str = self.string[:-1]
+        else:
+            old_str = ""
         self.string = ''.join(
-            [self.string, new_str, chr(0)]
+            [old_str, new_str, chr(0)]
         )
     
     def put_proc(self):
@@ -200,4 +202,8 @@ getchar = _Getch()
 
 if __name__ == "__main__":
     fucker = SteveFucker()
-    fucker.eval(test_program)
+    i = 1
+    if sys.argv[i] == '-v':
+        i+=1
+    fucker.eval(open(sys.argv[i]).read())
+    if i == 2: print fucker.tape
