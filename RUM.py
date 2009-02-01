@@ -41,6 +41,7 @@ class RumSwigger(object):
             ')': self.end_proc,
             ':': self.call_proc,
             '"': self.put_string,
+            '!': self.breakpoint,
             '#': self.skip_comment
         }
     
@@ -58,11 +59,14 @@ class RumSwigger(object):
         self.pgm_pos += 1
     
     def run(self):
+        self.running = True
         while self.pgm_pos < self.pgm_len and self.pgm_pos >= 0:
             self.go()
+            if not self.running: return
         sys.stdout.write('\n')
     
     def step(self):
+        self.running = False
         if self.pgm_pos >= self.pgm_len or self.pgm_pos < 0:
             return False
         self.go()
@@ -71,6 +75,9 @@ class RumSwigger(object):
             sys.stdout.write('\n')
             return False
         return True
+    
+    def breakpoint(self):
+        self.running = False
     
     def check_tape(self, pos):
         if pos < len(self.tape):
