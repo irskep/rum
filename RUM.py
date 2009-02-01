@@ -12,7 +12,6 @@ class SteveFucker(object):
         super(SteveFucker, self).__init__()
         self.tape_len = tape_len
         self.eof = eof
-        self.tape = []
     
     def eval(self, program_text):    
         self.program = program_text
@@ -26,7 +25,6 @@ class SteveFucker(object):
         self.reps = 0
         self.string = ""
         while self.pgm_pos < self.pgm_len and self.pgm_pos >= 0:
-            #print self.pgm_pos
             c = self.program[self.pgm_pos]
             if c == '>':
                 self.ptr_pos += self.get_reps()
