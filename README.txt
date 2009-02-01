@@ -9,4 +9,6 @@ The following program converts the string "hello world" to uppercase:
 You can repeat a command n times by preceding that command with a number. Using this feature, we can significantly shorten the 'helloworld' program:
 "helloworld",[32-.,]
 
+Comment out lines until the next LF with #. Please do not put brackets or parentheses inside comments.
+
 RUM is in the public domain.

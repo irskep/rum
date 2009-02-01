@@ -5,7 +5,7 @@
 
 import sys, string
 
-test_program = '"helloworld",[32-.,]'
+test_program = '+("helloworld",[32-.,])::'
 
 class SteveFucker(object):
     def __init__(self, tape_len=0, eof=""):
@@ -16,6 +16,7 @@ class SteveFucker(object):
     def eval(self, program_text):    
         self.program = program_text
         self.pgm_len = len(self.program)
+        self.procedures = {}
         if self.tape_len > 0:
             self.tape = [0] * self.tape_len
         else:
@@ -23,10 +24,20 @@ class SteveFucker(object):
         self.ptr_pos = 0
         self.pgm_pos = 0
         self.reps = 0
+        self.return_positions = []
         self.string = ""
+        
+        cmd_dict = {
+            '.': self.put_char,
+            ',': self.get_char,
+            '(': self.put_proc,
+            '"': self.put_string
+        }
         while self.pgm_pos < self.pgm_len and self.pgm_pos >= 0:
             c = self.program[self.pgm_pos]
-            if c == '>':
+            if c in cmd_dict:
+                cmd_dict[c]()
+            elif c == '>':
                 self.ptr_pos += self.get_reps()
                 self.ptr_pos = self.check_tape(self.ptr_pos)
             elif c == '<':
@@ -36,42 +47,27 @@ class SteveFucker(object):
                 self.tape[self.ptr_pos] += self.get_reps()
             elif c == '-':
                 self.tape[self.ptr_pos] -= self.get_reps()
-            elif c == '.':
-                if self.tape[self.ptr_pos] in range(256):
-                    sys.stdout.write(chr(self.tape[self.ptr_pos]))
-                else:
-                    sys.stdout.write(str(self.tape[self.ptr_pos]))
-            elif c == ',':
-                if len(self.string) > 0:
-                    char_in = ord(self.string[0])
-                    self.string = self.string[1:]
-                else:
-                    char_in = ord(getchar())
-                if char_in == 3:
-                    self.pgm_pos = self.pgm_len
-                if char_in == 4:
-                    if self.eof == "0":
-                        self.tape[self.ptr_pos] = 0
-                    elif self.eof == "-1":
-                        self.tape[self.ptr_pos] = -1
-                else:
-                    self.tape[self.ptr_pos] = char_in
+            elif c == ':':
+                self.return_positions.append(self.pgm_pos)
+                print 'pushed', self.return_positions
+                self.pgm_pos = self.procedures[self.tape[self.ptr_pos]]
+            elif c == ')':    
+                print 'popping', self.return_positions
+                self.pgm_pos = self.return_positions.pop()
             elif c == ']':
                 if self.tape[self.ptr_pos] != 0:
                     self.go_to_matching_bracket()
             elif c == '[':
                 if self.tape[self.ptr_pos] == 0:
                     self.go_to_matching_bracket()
-            elif c == '"':
-                self.put_string()
             elif c in string.digits:
                 if self.reps == 0:
                     self.reps = int(c)
                 else:
                     self.reps *= 10
                     self.reps += int(c)
-            elif c == "%":
-                while self.program[self.pgm_pos] != "%" \
+            elif c == "#":
+                while self.program[self.pgm_pos] != "\n" \
                         and self.pgm_pos < self.pgm_len:
                     self.pgm_pos += 1
             self.pgm_pos += 1
@@ -84,6 +80,28 @@ class SteveFucker(object):
             return pos % self.tape_len
         self.tape.extend([0] * len(self.tape))
         return pos
+    
+    def put_char(self):
+        if self.tape[self.ptr_pos] in range(256):
+            sys.stdout.write(chr(self.tape[self.ptr_pos]))
+        else:
+            sys.stdout.write(str(self.tape[self.ptr_pos]))
+    
+    def get_char(self):    
+        if len(self.string) > 0:
+            char_in = ord(self.string[0])
+            self.string = self.string[1:]
+        else:
+            char_in = ord(getchar())
+        if char_in == 3:
+            self.pgm_pos = self.pgm_len
+        if char_in == 4:
+            if self.eof == "0":
+                self.tape[self.ptr_pos] = 0
+            elif self.eof == "-1":
+                self.tape[self.ptr_pos] = -1
+        else:
+            self.tape[self.ptr_pos] = char_in
     
     def go_to_matching_bracket(self):
         depth = 1
@@ -118,11 +136,23 @@ class SteveFucker(object):
             else:
                 if self.program[self.pgm_pos] == '"':
                     ok = True
+        if self.pgm_pos == self.pgm_len:
+            print "String not terminated"
         new_str = self.program[start_pos:self.pgm_pos]
         new_str *= self.get_reps()
         self.string = ''.join(
             [self.string, new_str, chr(0)]
         )
+    
+    def put_proc(self):
+        val = self.tape[self.ptr_pos]
+        start = self.pgm_pos+1
+        while self.pgm_pos < self.pgm_len \
+                and self.program[self.pgm_pos] != ')':
+            self.pgm_pos += 1
+        if self.pgm_pos >= self.pgm_len:
+            print "Right paren not found for left at", start+1
+        self.procedures[val] = start
     
     def get_reps(self):
         r = max(1, self.reps)
