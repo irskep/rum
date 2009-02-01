@@ -7,10 +7,11 @@ import sys, string
 from getch import getchar
 
 class SteveFucker(object):
-    def __init__(self, tape_len=0, eof=""):
+    def __init__(self, tape_len=0, eof="", cell_size=0):
         super(SteveFucker, self).__init__()
         self.tape_len = tape_len
         self.eof = eof
+        self.cell_size = cell_size
     
     def eval(self, program_text):    
         self.program = program_text
@@ -43,9 +44,15 @@ class SteveFucker(object):
                 self.ptr_pos -= self.get_reps()
                 self.ptr_pos = self.check_tape(self.ptr_pos)
             elif c == '+':
-                self.tape[self.ptr_pos] += self.get_reps()
+                v = self.tape[self.ptr_pos] + self.get_reps()
+                if self.cell_size > 0:
+                    v = v % self.cell_size
+                self.tape[self.ptr_pos] = v
             elif c == '-':
-                self.tape[self.ptr_pos] -= self.get_reps()
+                v = self.tape[self.ptr_pos] - self.get_reps()
+                if self.cell_size > 0:
+                    v = v % self.cell_size
+                self.tape[self.ptr_pos] = v
             elif c == ':':
                 self.return_positions.append(self.pgm_pos)
                 self.pgm_pos = self.procedures[self.tape[self.ptr_pos]]
@@ -162,9 +169,29 @@ class SteveFucker(object):
     
 
 if __name__ == "__main__":
-    fucker = SteveFucker()
-    i = 1
-    if sys.argv[i] == '-v':
-        i+=1
-    fucker.eval(open(sys.argv[i]).read())
-    if i == 2: print fucker.tape
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option(
+        '-l', '--length', dest='tape_len', default=0, type='int', 
+        help='Tape length.'
+    )
+    parser.add_option(
+        '-e', '--eof', dest='eof', default="", type='string', 
+        help='Set to 0, -1, or leave blank for desired EOF behavior.'
+    )
+    parser.add_option(
+        '-s', '--size', dest='size', default=0, type='int', 
+        help='Individual cell size. Set to 0 for unbounded.'
+    )
+    parser.add_option(
+        "-v", "--verbose", dest="verbose", default=False, action="store_true",
+        help="Print tape to console when finished."
+    )
+    (opts, args) = parser.parse_args()
+    if len(args) != 1:
+        parser.error("Incorrect number of arguments.")
+        quit()
+    print [opts.tape_len, opts.eof, opts.size, opts.verbose]
+    fucker = SteveFucker(opts.tape_len, opts.eof, opts.size)
+    fucker.eval(open(args[0]).read())
+    if opts.verbose: print fucker.tape
