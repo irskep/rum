@@ -7,11 +7,12 @@ import sys, string
 from getch import getchar
 
 class RumSwigger(object):
-    def __init__(self, tape_len=0, eof="", cell_size=0):
+    def __init__(self, tape_len=0, eof="", cell_size=0, raw=False):
         super(RumSwigger, self).__init__()
         self.tape_len = tape_len
         self.eof = eof
         self.cell_size = cell_size
+        self.raw = raw
     
     def init(self, program_text):    
         self.program = program_text
@@ -120,7 +121,7 @@ class RumSwigger(object):
         self.tape[self.ptr_pos] = v
     
     def put_char(self):
-        if self.tape[self.ptr_pos] in range(256):
+        if self.tape[self.ptr_pos] in range(256) and not self.raw:
             v = chr(self.tape[self.ptr_pos])
         else:
             v = str(self.tape[self.ptr_pos])
@@ -264,11 +265,15 @@ if __name__ == "__main__":
         "-v", "--verbose", dest="verbose", default=False, action="store_true",
         help="Print tape to console when finished."
     )
+    parser.add_option(
+        "-r", "--raw", dest="raw", default=False, action="store_true",
+        help="Makes programs give raw number output instead of converting to ASCII"
+    )
     (opts, args) = parser.parse_args()
     if len(args) != 1:
         parser.error("Incorrect number of arguments.")
         quit()
-    fucker = RumSwigger(opts.tape_len, opts.eof, opts.size)
+    fucker = RumSwigger(opts.tape_len, opts.eof, opts.size, opts.raw)
     fucker.init(open(args[0]).read())
     fucker.run()
     if opts.verbose: print fucker.tape
