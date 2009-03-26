@@ -9,6 +9,8 @@ RUM (bRainfUck iMproved) is a Brainfuck interpreter with Extra Features! It supp
 The following program converts the string "helloworld" to uppercase:
 "helloworld",[--------------------------------.,]
 
+Strings are null-terminated.
+
  ===============
  = Repetitions =
  ===============
